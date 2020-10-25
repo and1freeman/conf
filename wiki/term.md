@@ -1,4 +1,4 @@
-Open
+**Open** 
 :term(inal)
 
 Go to vim normal mode(regular vim abilities):
