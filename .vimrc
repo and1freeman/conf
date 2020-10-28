@@ -1,10 +1,31 @@
+" press K on an option to see help page
+
+" source config on file save {{{
+augroup source_config
+  autocmd!
+  autocmd BufWritePost ~/.vimrc ++nested source $MYVIMRC
+augroup END
+" }}}
+
+" vimscript file settings {{{
+augroup filetype_vim
+  autocmd!
+  autocmd FileType vim setlocal foldmethod=marker
+augroup END
+" }}}
+
+filetype plugin on
 syntax on
 
-" from Primeagen video
+" line numbers
 set number
 set noerrorbells
-set tabstop=2 softtabstop=2 shiftwidth=2
+
+" use spaces instead of tabs
 set expandtab
+
+" spaces in tab
+set tabstop=2 softtabstop=2 shiftwidth=2
 set smartindent
 set nowrap
 set smartcase
@@ -22,17 +43,20 @@ set noshowmode showcmd
 set pastetoggle=<F3>
 set wildchar=<tab> wildmenu wildmode=full
 set signcolumn=yes
+set omnifunc=syntaxcomplete#Complete
+set completeopt+=noinsert,menuone
 
 " always show statusline
 set laststatus=2
-set listchars=tab:‣\ ,trail:·,precedes:«,extends:»,eol:¬
+set listchars=tab:вЂЈ\ ,trail:В·,precedes:В«,extends:В»,eol:В¬
 set list
 
 " make :find search recursively relative to the root folder
 set path+=**
 set wildignore=*/node_modules/*
+set autoread
 
-" plugins
+" plugins {{{
 call plug#begin('~/.vim/plugged')
 
 Plug 'morhetz/gruvbox'
@@ -45,75 +69,51 @@ Plug 'maxmellon/vim-jsx-pretty'
 Plug 'alvan/vim-closetag'
 Plug 'tpope/vim-commentary'
 Plug 'pangloss/vim-javascript'
-Plug 'tomasiser/vim-code-dark'
 Plug 'dense-analysis/ale'
 Plug 'prettier/vim-prettier'
 Plug 'junegunn/goyo.vim'
+Plug 'lervag/vimtex'
+Plug 'vifm/vifm.vim'
+Plug 'ap/vim-css-color'
+
 
 call plug#end()
-
+" }}}
 
 " colorschemes
 colorscheme gruvbox
-" colorscheme codedark
+
 set background=dark
 set cursorline
 
-" fix tmux E254 error
+" use 256 colors
 set t_Co=256
 
 let g:lightline = {
-\ 'colorscheme': 'gruvbox',
-\ 'active': {
-\   'left': [ [ 'mode', 'paste' ],
-\             [ 'gitbranch', 'readonly', 'filename', 'modified' ] ]
-\ },
-\ 'component_function': {
-\   'gitbranch': 'ShowBranch',
-\   'fileformat': 'ShowFileFormat',
-\   'fileencoding': 'ShowEncoding'
-\ },
-\ }
-
-function! ShowBranch()
-  return winwidth(0) > 70 ? FugitiveHead() : ''
-endfunction
-
-function! ShowFileFormat()
-  return winwidth(0) > 90 ? &fileformat : ''
-endfunction
-
-function! ShowEncoding()
-  return winwidth(0) > 90 ? &encoding : ''
-endfunction
-
-" function! Linter()
-"   let current_buff=bufnr("%")
-
-"   let error_count=ale#statusline#Count(current_buff).error
-"   let warning_count=ale#statusline#Count(current_buff).warning
-"   let info=""
-
-"   if error_count
-"     let info=info . "E:" . error_count
-"   endif
-
-"   if warning_count
-"     let info=info . " W:" . warning_count
-"   endif
-
-"   return info
-" endfunction
+      \ 'colorscheme': 'gruvbox',
+      \ 'active': {
+      \   'left': [ [ 'mode', 'paste' ],
+      \             [ 'gitbranch', 'readonly', 'filename', 'modified' ] ]
+      \ },
+      \ 'component_function': {
+      \   'gitbranch': 'ShowBranch',
+      \   'fileformat': 'ShowFileFormat',
+      \   'fileencoding': 'ShowEncoding'
+      \ },
+      \ }
 
 
 hi CursorLine ctermbg=0
 hi SignColumn ctermbg=0
 
 " remove trailing whitespaces on save
-autocmd BufWritePre * %s/\s\+$//e
+augroup remove_trailing_whitespaces
+  autocmd!
+  autocmd BufWritePre * %s/\s\+$//e
+augroup END
 
 " mappings
-let mapleader = " "
+let mapleader=" "
 
 " splits navigation
 nnoremap <c-h> :wincmd h<cr>
@@ -121,17 +121,21 @@ nnoremap <c-j> :wincmd j<cr>
 nnoremap <c-k> :wincmd k<cr>
 nnoremap <c-l> :wincmd l<cr>
 
+" go to next and previous split
+nnoremap <leader>w :wincmd w<cr>
+nnoremap <leader>W :wincmd W<cr>
+
 nnoremap <leader>s :w<cr>
 nnoremap <leader>q :q<cr>
 
 " buffers nav
 " alt-key: ctrl-v
-nnoremap h :bp<cr>
-nnoremap l :bn<cr>
+nnoremap <c-h> :bp<cr>
+nnoremap <c-l> :bn<cr>
 
 " fzf
 nnoremap <c-p> :Files<cr>
-nnoremap <leader>b :Buffers<cr>
+nnoremap <leader>l :Buffers<cr>
 
 " visual selection movements
 vnoremap J :m '>+1<cr>gv=gv
@@ -149,23 +153,53 @@ nnoremap <leader>rc :%s///gc<left><left><left><left>
 " under cursor
 nnoremap <leader>ru :%s/\<<C-r><C-w>\>//g<left><left>
 
-" copy to system clipboard
+" copy to system clipboard (not exactly)
 vmap <leader>c y:new ~/.vim/.vimbuffer<cr>VGp:x<cr> \| :!cat ~/.vim/.vimbuffer \| clip.exe <cr><cr>
 
 " paste from buffer
 map <leader>v :r ~/.vim/.vimbuffer<cr>
 
+nnoremap <leader>z :Goyo<cr>
 
 " jsx, scss prettier fix
 autocmd BufNewFile,BufRead *.jsx set filetype=javascript
 autocmd BufNewFile,BufRead *.scss set filetype=scss.css
 
+function Autocomplete()
+  let l:previous_symbol=strpart(getline('.'),col('.')-2,1)
+  let l:letter=matchstr(l:previous_symbol, '[a-zA-Z]')
+  let l:popup_id=popup_findinfo()
+
+  " echo !empty(l:letter)
+  echom l:popup_id
+  if (!empty(l:letter))
+    call feedkeys("\<c-x>\<c-o>")
+  else
+    " if pumvisible()
+    " call feedkeys("\<c-x>")
+    " endif
+  endif
+endfunction
+
+" function Surround()
+"   let l:word_under_cursor=expand("<cword>")
+"   echo l:word_under_cursor
+
+"   call feedkeys("viw\<esc>a\"\<esc>bi\"\<esc>lel")
+" endfunction
+
+" nnoremap gs :call Surround()<cr>
+
+" set updatetime=200
+" augroup autocomplete
+"   autocmd CursorHoldI * call Autocomplete()
+" augroup END
+
 " Goyo
-nnoremap <leader>z :Goyo<cr>
 
 
 " snippets
-let g:UltiSnipsSnippetDirectories=["UltiSnips", "my-snippets"]
+let g:UltiSnipsSnippetDirectories=["UltiSnips", "custom-snippets"]
 let g:UltiSnipsExpandTrigger="<c-e>"
 let g:UltiSnipsJumpBackwardTrigger="<s-tab>"
 let g:UltiSnipsJumpForwardTrigger="<tab>"
@@ -198,10 +232,37 @@ let g:ale_fixers={
 \ }
 
 nnoremap <leader>gd :ALEGoToDefinition<cr>
-
-" ale autoinserting fix
-set completeopt+=noinsert
-
+nnoremap <leader>e :Vifm<cr>
 
 inoremap <silent><expr> <tab> pumvisible() ? "<C-n>" : "\<TAB>"
 inoremap <silent><expr> <S-tab> pumvisible() ? "<C-p>" : "\<S-TAB>"
+
+" latex
+let g:tex_flavor='latex'
+let g:vimtex_quickfix_mode=0
+
+
+inoremap " ""<left>
+inoremap ' ''<left>
+inoremap ( ()<left>
+inoremap [ []<left>
+inoremap { {}<left>
+inoremap {<cr> {<cr>}<esc>O
+inoremap [<cr> [<cr>]<esc>O
+
+
+" for cURL
+command Exec new | r !sh #
+autocmd BufRead *.rest set wrap
+
+function RESTCall()
+  let l:name=expand("%:t:r")
+  let l:dir=expand("%:p:h")
+  let l:ext=expand("%:e")
+  echo l:dir l:name l:ext
+endfunction
+" command Exec call RESTCall()
+nnoremap <c-e> :Exec<cr>
+
+" ctags
+command! MakeTags !ctags -R --exclude=.git --exclude=node_modules .
