@@ -1,0 +1,118 @@
+# general
+snippet clg "console.log(...)" b
+console.log($0);
+endsnippet
+
+
+snippet clw "console.warn(...)" b
+console.warn($0);
+endsnippet
+
+
+snippet const "const" b
+const $1 = $0;
+endsnippet
+
+
+snippet fd "function declaration"
+function ${1:Name}($2) {
+	$0
+}
+endsnippet
+
+
+snippet afd "async function declaration"
+async function ${1:Name}($2) {
+	$0
+}
+endsnippet
+
+
+snippet af "arrow function" b
+const ${1:Name} = ($2) => {
+	$0
+}
+endsnippet
+
+
+snippet uaf "arrow function" iw
+($2) => {
+	$0
+}
+endsnippet
+
+
+snippet uafo "arrow function with object as return value" iw
+($2) => ({
+	$0
+})
+endsnippet
+
+
+snippet iuaf "inline arrow function" i
+($2) => $0
+endsnippet
+
+
+snippet requ "require statement"
+const $1 = require('$1');
+endsnippet
+
+
+snippet requ. "require statement of file in current directory"
+const $1 = require('./$1');
+endsnippet
+
+
+
+# react
+snippet rfc "functional react component" b
+import React from 'react';
+
+function ${1:ComponentName}(${2:props}) {
+	return (
+		<div className="$3">
+			$0
+		</div>
+	)
+}
+
+export default $1;
+
+endsnippet
+snippet rafc "functional react component" b
+import React from 'react';
+
+const ${1:ComponentName} = (${2:props}) => {
+	return (
+		<div className="$3">
+			$0
+		</div>
+	)
+}
+
+export default $1;
+
+endsnippet
+
+snippet jt "jsx tag" b
+<${1:div} className="$2">
+	$0
+</$1>
+endsnippet
+
+snippet uses "useState Hook" b
+const [${1}, set`!p snip.rv=t[1][0].upper() + t[1][1:] if len(t[1]) > 0 else '' `] = useState($0);
+endsnippet
+
+snippet usee "useEffect Hook" b
+useEffect(() => {
+	$0
+}, [$1])
+endsnippet
+
+snippet sty "create styled component" b
+const $1 = styled.div\`
+	$0
+\`
+endsnippet
