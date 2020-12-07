@@ -10,7 +10,7 @@ sudo apt install yarn
 
 # dev
 echo "Installing utils.."
-sudo apt install vim curl git vifm fzf cmdtest
+sudo apt install vim curl git vifm fzf
 sudo apt-get install xclip ripgrep unzip
 
 mkdir -p ~/.vim/undodir
