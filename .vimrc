@@ -1,12 +1,11 @@
-" press K on an option to see help page
+" press K on an option name to see help page
 
 " source config on file save {{{
 augroup source_config
   autocmd!
-  autocmd BufWritePost ~/.vimrc ++nested source $MYVIMRC
+  autocmd BufWritePost ~/.vimrc nested source $MYVIMRC
 augroup END
 " }}}
-
 " vimscript file settings {{{
 augroup filetype_vim
   autocmd!
@@ -15,10 +14,10 @@ augroup END
 " }}}
 
 filetype plugin on
-syntax on
+syntax enable
 
 " line numbers
-set number
+set number relativenumber
 set noerrorbells
 
 " use spaces instead of tabs
@@ -36,19 +35,18 @@ set undofile
 set incsearch
 
 " cursor line in the middle of the screen
-set scrolloff=999
+set scrolloff=10
 set splitbelow splitright
 set hidden
-set noshowmode showcmd
+set showcmd noshowmode
 set pastetoggle=<F3>
 set wildchar=<tab> wildmenu wildmode=full
 set signcolumn=yes
 set omnifunc=syntaxcomplete#Complete
 set completeopt+=noinsert,menuone
 
-" always show statusline
 set laststatus=2
-set listchars=tab:вЂЈ\ ,trail:В·,precedes:В«,extends:В»,eol:В¬
+set listchars=tab:‣\ ,trail:·,precedes:«,extends:»,eol:¬
 set list
 
 " make :find search recursively relative to the root folder
@@ -61,9 +59,9 @@ call plug#begin('~/.vim/plugged')
 
 Plug 'morhetz/gruvbox'
 Plug 'SirVer/ultisnips'
-Plug 'itchyny/lightline.vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
+Plug 'itchyny/lightline.vim'
 Plug 'tpope/vim-fugitive'
 Plug 'maxmellon/vim-jsx-pretty'
 Plug 'alvan/vim-closetag'
@@ -75,36 +73,71 @@ Plug 'junegunn/goyo.vim'
 Plug 'lervag/vimtex'
 Plug 'vifm/vifm.vim'
 Plug 'ap/vim-css-color'
-
+Plug 'jiangmiao/auto-pairs'
+Plug 'glepnir/oceanic-material'
 
 call plug#end()
 " }}}
 
 " colorschemes
-colorscheme gruvbox
+let g:oceanic_material_allow_bold = 1
+let g:oceanic_material_allow_italic = 1
 
+
+colorscheme oceanic_material
 set background=dark
-set cursorline
 
 " use 256 colors
 set t_Co=256
 
+" highlight Normal guibg=NONE ctermbg=NONE
+
+function! LightLineBranch()
+  let l:symbol = '[git]: '
+  " let l:symbol = '⎇  '
+  " let l:symbol = ''
+  if &buftype ==# 'terminal'
+    return ''
+  endif
+
+  if exists('*FugitiveHead')
+    let l:branchname = FugitiveHead()
+
+    if len(l:branchname) ==# 0
+      return ''
+    endif
+
+    return l:symbol . l:branchname
+  endif
+
+  return ''
+endfunction
+
 let g:lightline = {
-      \ 'colorscheme': 'gruvbox',
-      \ 'active': {
-      \   'left': [ [ 'mode', 'paste' ],
-      \             [ 'gitbranch', 'readonly', 'filename', 'modified' ] ]
-      \ },
-      \ 'component_function': {
-      \   'gitbranch': 'ShowBranch',
-      \   'fileformat': 'ShowFileFormat',
-      \   'fileencoding': 'ShowEncoding'
-      \ },
-      \ }
+        \'colorscheme': 'wombat',
+        \ 'active': {
+        \   'left': [ [ 'mode', 'paste' ],
+        \             [ 'gitbranch', 'readonly', 'filename', 'modified' ] ],
+        \   'right': [ [ 'lineinfo' ], [ 'percent' ], [ 'filetype' ] ]
+        \ },
+        \ 'component_function': {
+        \   'gitbranch': 'LightLineBranch',
+        \ },
+        \ }
 
-
-hi CursorLine ctermbg=0
-hi SignColumn ctermbg=0
+let g:lightline.mode_map = {
+        \ 'n' : 'N',
+        \ 'i' : 'I',
+        \ 'R' : 'R',
+        \ 'v' : 'V',
+        \ 'V' : 'VL',
+        \ "\<C-v>": 'VB',
+        \ 'c' : 'C',
+        \ 's' : 'S',
+        \ 'S' : 'SL',
+        \ "\<C-s>": 'SB',
+        \ 't': 'T',
+        \ }
 
 " remove trailing whitespaces on save
 augroup remove_trailing_whitespaces
@@ -115,23 +148,18 @@ augroup END
 " mappings
 let mapleader=" "
 
-" splits navigation
-nnoremap <c-h> :wincmd h<cr>
-nnoremap <c-j> :wincmd j<cr>
-nnoremap <c-k> :wincmd k<cr>
-nnoremap <c-l> :wincmd l<cr>
-
-" go to next and previous split
-nnoremap <leader>w :wincmd w<cr>
-nnoremap <leader>W :wincmd W<cr>
-
 nnoremap <leader>s :w<cr>
 nnoremap <leader>q :q<cr>
+nnoremap <silent> <leader>x :b #<cr>:bd #<cr>
 
 " buffers nav
-" alt-key: ctrl-v
 nnoremap <c-h> :bp<cr>
 nnoremap <c-l> :bn<cr>
+tnoremap <c-h> <c-w>:bp<cr>
+tnoremap <c-l> <c-w>:bn<cr>
+
+" enter normal mode in terminal buffer
+tnoremap <c-u> <c-w>N<cr>
 
 " fzf
 nnoremap <c-p> :Files<cr>
@@ -140,6 +168,9 @@ nnoremap <leader>l :Buffers<cr>
 " visual selection movements
 vnoremap J :m '>+1<cr>gv=gv
 vnoremap K :m '<-2<cr>gv=gv
+
+vnoremap < <gv
+vnoremap > >gv
 
 nnoremap <F4> :set nu!<cr>
 
@@ -153,49 +184,12 @@ nnoremap <leader>rc :%s///gc<left><left><left><left>
 " under cursor
 nnoremap <leader>ru :%s/\<<C-r><C-w>\>//g<left><left>
 
-" copy to system clipboard (not exactly)
-vmap <leader>c y:new ~/.vim/.vimbuffer<cr>VGp:x<cr> \| :!cat ~/.vim/.vimbuffer \| clip.exe <cr><cr>
-
-" paste from buffer
-map <leader>v :r ~/.vim/.vimbuffer<cr>
-
 nnoremap <leader>z :Goyo<cr>
+nnoremap <leader>tt :vert terminal<cr>
 
 " jsx, scss prettier fix
 autocmd BufNewFile,BufRead *.jsx set filetype=javascript
 autocmd BufNewFile,BufRead *.scss set filetype=scss.css
-
-function Autocomplete()
-  let l:previous_symbol=strpart(getline('.'),col('.')-2,1)
-  let l:letter=matchstr(l:previous_symbol, '[a-zA-Z]')
-  let l:popup_id=popup_findinfo()
-
-  " echo !empty(l:letter)
-  echom l:popup_id
-  if (!empty(l:letter))
-    call feedkeys("\<c-x>\<c-o>")
-  else
-    " if pumvisible()
-    " call feedkeys("\<c-x>")
-    " endif
-  endif
-endfunction
-
-" function Surround()
-"   let l:word_under_cursor=expand("<cword>")
-"   echo l:word_under_cursor
-
-"   call feedkeys("viw\<esc>a\"\<esc>bi\"\<esc>lel")
-" endfunction
-
-" nnoremap gs :call Surround()<cr>
-
-" set updatetime=200
-" augroup autocomplete
-"   autocmd CursorHoldI * call Autocomplete()
-" augroup END
-
-" Goyo
 
 
 " snippets
@@ -213,15 +207,17 @@ let g:prettier#autoformat_require_pragma=0
 let g:netrw_banner=0
 let g:netrw_liststyle=3
 let g:netrw_winsize=25
+let g:netrw_browse_split = 4
+let g:netrw_altv = 1
 
 " closetag plugin
-let g:closetag_filenames = '*.html,*.xhtml,*.phtml,*.jsx,*.js'
+let g:closetag_filenames = '*.html,*.xhtml,*.xml,*.phtml,*.jsx,*.js'
 
 " ale
-let g:ale_sign_error='|'
-let g:ale_sign_warning='|'
+let g:ale_sign_error='!'
+let g:ale_sign_warning='?'
 
-let g:ale_fix_on_save = 1
+let g:ale_fix_on_save = 0
 let g:ale_lint_on_text_changed = 'never'
 let g:ale_javascript_eslint_executable='npx eslint'
 let g:ale_completion_enabled=1
@@ -241,28 +237,29 @@ inoremap <silent><expr> <S-tab> pumvisible() ? "<C-p>" : "\<S-TAB>"
 let g:tex_flavor='latex'
 let g:vimtex_quickfix_mode=0
 
-
-inoremap " ""<left>
-inoremap ' ''<left>
-inoremap ( ()<left>
-inoremap [ []<left>
-inoremap { {}<left>
-inoremap {<cr> {<cr>}<esc>O
-inoremap [<cr> [<cr>]<esc>O
-
-
-" for cURL
-command Exec new | r !sh #
-autocmd BufRead *.rest set wrap
-
-function RESTCall()
-  let l:name=expand("%:t:r")
-  let l:dir=expand("%:p:h")
-  let l:ext=expand("%:e")
-  echo l:dir l:name l:ext
+" Toggle Vexplore with Ctrl-E
+function! ToggleVExplorer()
+  if exists("t:expl_buf_num")
+      let expl_win_num = bufwinnr(t:expl_buf_num)
+      if expl_win_num != -1
+          let cur_win_nr = winnr()
+          exec expl_win_num . 'wincmd w'
+          close
+          exec cur_win_nr . 'wincmd w'
+          unlet t:expl_buf_num
+      else
+          unlet t:expl_buf_num
+      endif
+  else
+      exec '1wincmd w'
+      Vexplore
+      let t:expl_buf_num = bufnr("%")
+  endif
 endfunction
-" command Exec call RESTCall()
-nnoremap <c-e> :Exec<cr>
 
-" ctags
-command! MakeTags !ctags -R --exclude=.git --exclude=node_modules .
+map <silent> <leader>\ :call ToggleVExplorer()<CR>
+
+
+" python
+autocmd FileType python map <buffer> <F9> :w<CR>:exec '!python3' shellescape(@%, 1)<CR>
+autocmd FileType python imap <buffer> <F9> <esc>:w<CR>:exec '!python3' shellescape(@%, 1)<CR>
